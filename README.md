@@ -1,0 +1,1 @@
+# Play Elasticsearch Template
