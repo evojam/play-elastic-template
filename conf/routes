@@ -1,0 +1,12 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# CRUD
+POST    /book                      @controllers.BookIndexController.index()
+PATCH   /book/:id                  @controllers.BookIndexController.update(id: String)
+DELETE  /book/:id                  @controllers.BookIndexController.remove(id: String)
+POST    /book/bulk                 @controllers.BookIndexController.bulkInsert()
+
+# SEARCH
+POST    /book/search               @controllers.BookSearchController.search()
