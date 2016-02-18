@@ -1,8 +1,8 @@
 package model
 
-import org.joda.time.DateTime
-
 import play.api.libs.json.Json
+
+import org.joda.time.DateTime
 
 case class Book(isbn: String, title: String, author: String, blurb: String, publisher: String,
   publishDate: DateTime, genres: Set[String]) {

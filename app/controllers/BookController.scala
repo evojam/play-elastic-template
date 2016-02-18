@@ -1,53 +1,42 @@
 package controllers
 
+import javax.inject.Inject
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future.successful
 
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 
+import model.{Book, BookDao}
 import org.joda.time.DateTime
 
-import com.evojam.play.elastic4s.client.ElasticSearchClient
-import com.google.inject.Inject
-import com.google.inject.name.Named
-import com.sksamuel.elastic4s.IndexType
+class BookController @Inject() (bookDao: BookDao) extends Controller {
 
-import model.Book
-
-class BookIndexController @Inject()(elastic: ElasticSearchClient, @Named("books") books: IndexType)
-  extends Controller {
-
-  def index() = Action.async(parse.json[Book]) { implicit request =>
-    elastic.index(books, request.body.isbn, request.body)
-      .map {
-        case true => Ok(Json.toJson(request.body))
-        case false => NotFound
-      }
-  }
-
-  def remove(id: String) = Action.async {
-    elastic.remove(books, id).map {
-      case true => NoContent
-      case false => NotFound
+  def get(bookId: String) = Action.async {
+    bookDao.getBookById(bookId) map {
+      case None => NotFound
+      case Some(book) => Ok(Json.toJson(book))
     }
   }
 
-  def update(id: String) = Action.async(parse.json[Book]) { implicit request =>
-    elastic.update(books, id, request.body).map {
-      case true => Ok
-      case false => NotFound
+  def bulkIndex() = Action.async {
+    /* In real app you'd rather parse input from request, but here we're just using canned list of books */
+    bookDao.bulkIndex(cannedBulkInput) map {
+      case resp if !resp.hasFailures => Ok
+      case resp => InternalServerError(resp.failures.map(f => f.failureMessage) mkString ";")
     }
   }
 
-  def bulkInsert() = Action.async { implicit request =>
-    elastic.bulkInsert(books, bulkDocuments).map(_.hasFailures).map {
-      case true => BadRequest
-      case false => Created
+  def search(q: String) = Action.async {
+    bookDao.searchByQueryString(q) map {
+      case books if books.length > 0 => Ok(Json.toJson(books))
+      case empty => NoContent
     }
   }
 
-  val bulkDocuments = List(
+
+
+  val cannedBulkInput = List(
     Book(
       "978-0486298238",
       "Meditations",

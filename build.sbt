@@ -7,7 +7,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
-  "com.evojam" %% "play-elastic4s" % "0.0.7-SNAPSHOT",
+  "com.evojam" %% "play-elastic4s" % "0.2.1-SNAPSHOT",
   "net.codingwell" %% "scala-guice" % "4.0.1"
 )
 
