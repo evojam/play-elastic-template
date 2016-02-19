@@ -34,8 +34,6 @@ class BookController @Inject() (bookDao: BookDao) extends Controller {
     }
   }
 
-
-
   val cannedBulkInput = List(
     Book(
       "978-0486298238",
