@@ -5,6 +5,7 @@
 GET     /es/stats       @controllers.ElasticController.getStats()
 POST    /es/index       @controllers.ElasticController.createIndex()
 
+GET     /books/hardcoded @controllers.BookController.getHardcoded()
 GET     /books/:id      @controllers.BookController.get(id: String)
 POST    /books/bulk     @controllers.BookController.bulkIndex()
 GET     /books          @controllers.BookController.search(q: String)

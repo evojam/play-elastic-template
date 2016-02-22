@@ -12,6 +12,23 @@ import org.joda.time.DateTime
 
 class BookController @Inject() (bookDao: BookDao) extends Controller {
 
+  def getHardcoded = Action {
+    val book = Book(
+      "123-45678",
+      "Programming in Scala",
+      "Martin Odersky, Lex Spoon, and Bill Venners",
+      "Artima is very pleased to publish a new edition of the best-selling book on Scala, " +
+      "written by the designer of the language, Martin Odersky. Co-authored by Lex Spoon and Bill Venners, " +
+      "this book takes a step-by-step tutorial approach to teaching you Scala. Starting with the fundamental " +
+      "elements of the language, Programming in Scala introduces functional programming from the practitioner's " +
+      "perspective, and describes advanced language features that can make you a better, more productive developer.",
+      "Artima",
+      DateTime.parse("2010-12-13"),
+      Set("programming", "handbook")
+    )
+    Ok(Json.toJson(book))
+  }
+
   def get(bookId: String) = Action.async {
     bookDao.getBookById(bookId) map {
       case None => NotFound
