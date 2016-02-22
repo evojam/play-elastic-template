@@ -2,6 +2,9 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+GET     /es/stats       @controllers.ElasticController.getStats()
+POST    /es/index       @controllers.ElasticController.createIndex()
+
 GET     /books/:id      @controllers.BookController.get(id: String)
 POST    /books/bulk     @controllers.BookController.bulkIndex()
 GET     /books          @controllers.BookController.search(q: String)
