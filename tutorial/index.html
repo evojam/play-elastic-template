@@ -1,0 +1,179 @@
+<html>
+	<head>
+		<title>Play Framework with Elasticsearch - Activator Template</title>
+	</head>
+	<body>
+		<div>
+			<h2>Before You Start</h2>
+			<p>
+				<b>Warning: </b>the Play-Elasticsearch interoperability is provided by module
+				<code>com.evojam.play.elastic4s</code> which is experimental. Support is limited.
+			</p>
+			<p>
+				Hello, you have just created a small Play Framework application
+				with Elasticsearch integration.
+			</p>
+			<p>
+				Before it gets functional, you need an Elasticsearch instance up and running.
+				Note that this template assumes ES version 2.2.X and <b> will not work with others.</b>
+				Consult <a href="https://www.elastic.co/guide/en/elasticsearch/reference/2.2/setup.html" target="_blank">
+					Elasticsearch setup documentation</a> for information on running a local instance
+				or use a 2.2 <a href="https://hub.docker.com/_/elasticsearch/" target="_blank">docker image</a>.
+				We would also suggest installing
+					<a href="https://github.com/lmenezes/elasticsearch-kopf" target="_blank">kopf plugin</a> as it
+				gives a nice and human-friendly way of inspecting your ES cluster.
+			</p>
+			<p>
+			Verify if your ES installation is correct by running <code>curl $ES_HOST:9200</code>
+			(replace <code>$ES_HOST</code> with the proper host, e.g. <code>curl localhost:9200</code>
+			if you're running a local ES instance).
+			You should get output similar to the following:
+			</p>
+<pre>
+{
+  "name" : "Mosha",
+  "cluster_name" : "your-fancy-cluster-name",
+  "version" : {
+    "number" : "2.2.0",
+    "build_hash" : "8ff36d139e16f8720f2947ef62c8167a888992fe",
+    "build_timestamp" : "2016-01-27T13:32:39Z",
+    "build_snapshot" : false,
+    "lucene_version" : "5.4.1"
+  },
+  "tagline" : "You Know, for Search"
+}
+</pre>
+<p>
+				If <code>version.number</code> is 2.2.X, you're good to go. If you get no response,
+				there is a problem with your ES setup and you need to troubleshoot it before going further.
+			</p>
+			<p>
+				If you have no previous experience with ElasticSearch, it's high time you did something about it.
+				Definitely install the
+				<a href="https://github.com/lmenezes/elasticsearch-kopf" target="_blank">kopf plugin</a>
+					(if you're running the ES on your local machine,
+					<code>./elasticsearch/bin/plugin install lmenezes/elasticsearch-kopf/2.0</code> will do just fine),
+				visit <a href="http://localhost:9200/_plugin/kopf" target="_blank">the kopf dashboard</a>
+				and spend some time learning the basic concepts behind Elasticsearch.
+				Further tutorial assumes you have the basic understanding of ES indices, documents and indexing.
+		</div>
+
+		<div>
+			<h2>Setting up</h2>
+			<p>
+				All app configuration is managed via your <a href="#code/conf/application.conf" class="shortcut">application.conf</a>.
+				As a minimum, you need to set one cluster in <code>clusters</code> node, providing <code>uri</code> and <code>cluster.name</code>.
+				After setting it up you're ready to run the application using the <a href="#run/system" class="shortcut">run tab</a> or the buttons
+				under the template name. Then go visit <a href="http://localhost:9000/es/stats" target="_blank">localhost:9000/es/stats</a> to check if the
+				ES connection is working. You should see output similar to <code>curl $ES_HOST:9200</code>.
+			</p>
+			<p>
+				Okay, you've got ES running and your app can talk to it. Now it's time to create ES indices.
+				Your application <b>should not</b> be responsible for administrating the ES cluster.
+				As an exception, though, we added an action for creating example index in the app.
+				Simply make a POST request at <code>localhost:9200/es/index</code> to have the index created:
+				<code>curl -X POST localhost:9200/es/index</code>. Now inspect your indices, either by visiting
+				<a href="http://localhost:9200/_plugin/kopf" target="_blank">kopf dashboard</a> or by running
+				<code>curl localhost:9200/_cat/indices</code>. You should see a new empty index called "library".
+			</p>
+
+			<p>
+				Everything that happend during this step is controller by
+				<a href="#code/app/controllers/ElasticController.scala" class="shortcut">ElasticController.scala</a>.
+				It uses <a href="https://github.com/sksamuel/elastic4s" target="_blank">elastic4s DSL</a> to specify ES queries
+				and <a href="https://github.com/evojam/play-elastic4s" target="_blank">play-elastic4s</a> to handle configuration and injection.
+			</p>
+		</div>
+
+		<div>
+			<h2>The Model</h2>
+			<p>
+				It's a common practice to describe domain objects using simple case classes.
+				Take a look at <a href="#code/app/model/Book.scala" class="shortcut">Book.scala</a> for an example.
+				It defines a few fields and an implicit JSON formatter on a companion object. Note that
+				this file has nothing to do with Elasticsearch yet, and the only connection to Play 
+				is the Play JSON formatter.
+			</p>
+			<p>
+				The JSON formatter doesn't have to be defined on the companion object.
+				We find it useful, because this way it's always in implicit scope when required,
+				but feel free to define it elsewhere, e.g. in a BookJsonSupport trait that you
+				would mix in whenever necessary.
+			</p>
+			<p>
+				Having such case class is enough to build a REST API with Play.
+				Inspect the action <code>getHardcoded</code> in 
+				<a href="#code/app/controllers/BookController.scala" class="shortcut">BookController.scala</a>.
+				It simply creates a Book instance, converts it to JSON using Play JSON helper and returns a <code>200 OK</code> response.
+				Check the results by running a curl at <a href="http://localhost:9000/books/hardcoded" target="_blank">localhost:9000/books/hardcoded</a>.
+			</p>
+		</div>
+
+		<div>
+			<h2>Integrating with Elasticsearch</h2>
+			<p>
+				The application reads and writes books to Elasticsearch using a separate class,
+				<a href="#code/app/model/BookDao.scala" class="shortcut">BookDao</a>. Its constructor has
+				three parameters, all of which get injected
+				(if you are new to constructor dependency injection,
+				it's a good time to read on
+				<a href="https://www.playframework.com/documentation/2.4.x/ScalaDependencyInjection" target="_blank">dependency injection in Play</a>).
+				This is quite standard signature when
+				using play-elastic4s module: the <code>ClusterSetup</code> represents the cluster configuration
+				specified in <a href="#code/conf/application.conf" class="shortcut">application.conf</a>; the
+				PlayElasticFactory is used to obtain ES clients, and the IndexAndType provides configuration
+				of ES index and type.
+			</p>
+			<p>
+				The specific methods are implemented using <code>ElasticDsl</code> mixin from
+				<a href="https://github.com/sksamuel/elastic4s" target="_blank">elastic4s DSL</a>.
+				Next, the <code>PlayElasticJsonSupport</code> mixin provides
+				elastic4s <code>Indexable</code> and <code>HitAs</code> instances to provide
+				automatic JSON conversions based on already defined Play JSON formatter.
+				This way we can use the formatter defined in 
+				<a href="#code/app/model/Book.scala" class="shortcut">Book.scala</a>
+				to talk to Elasticsearch. Refer to
+				<a href="https://github.com/evojam/play-elastic4s" target="_blank">play-elastic4s module page</a> for more information
+				on that.
+			</p>
+			<p>
+				Check the methods in 
+				<a href="#code/app/controllers/BookController.scala" class="shortcut">BookController.scala</a>
+				to see the full life of a request in the app (the appropriate URLs for the endpoints are defined
+				in <a href="#code/conf/routes">routes</a> file).
+				Note how the <code>BookDao</code> transparently handles
+				Elasticsearch connection: all the public methods expose only domain objects. The controller
+				is unaware of what kind of search engine is actually backing your app - and that's a Good Thing.
+			</p>
+		</div>
+		<div>
+			<h2>Next</h2>
+			<p>
+				Congratulations, you now know the basics of play-elastic4s integration.
+				As a small hands-on excercise, you could try and split the 
+				<a href="#code/app/model/BookDao.scala" class="shortcut">BookDao</a> into
+				two files to separate the interface from its implementation, and then bind the implementation
+				using the beforementioned 
+				<a href="https://www.playframework.com/documentation/2.4.x/ScalaDependencyInjection" target="_blank">dependency injection in Play</a>.
+				As the next step we would highly recommend thinking your architecture over
+				and preparing a data model, alongside with appropriate mappings.
+				<a href="https://www.elastic.co/guide/index.html" target="_blank">Elasticsearch Guide</a>
+				will be unvaluable in providing information on data modelling in ES, administrating
+				the ES cluster and running queries. Then you're ready to dive deeper into the implementation.
+				Definitely check out the 
+				<a href="https://github.com/sksamuel/elastic4s" target="_blank">elastic4s DSL homepage</a>
+				to learn how to express appropriate queries with the Scala DSL.
+				Consult 
+				<a href="https://github.com/evojam/play-elastic4s" target="_blank">play-elastic4s module page</a> for
+				nuances regarding Play-Elasticsearch integration.
+			</p>
+			<p>
+				Good luck with your application!
+			</p>
+
+
+
+
+
+	</body>
+</html>
