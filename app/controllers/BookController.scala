@@ -46,7 +46,8 @@ class BookController @Inject() (bookDao: BookDao) extends Controller {
 
   def search(q: String) = Action.async {
     bookDao.searchByQueryString(q) map {
-      case books if books.length > 0 => Ok(Json.toJson(books))
+      case books if books.length > 0 =>
+        Ok(Json.toJson(books)).withHeaders("X-Total-Count" -> books.length.toString)
       case empty => NoContent
     }
   }
