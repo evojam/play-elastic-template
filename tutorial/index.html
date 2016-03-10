@@ -71,8 +71,8 @@
 				Okay, you've got ES running and your app can talk to it. Now it's time to create ES indices.
 				Your application <b>should not</b> be responsible for administrating the ES cluster.
 				As an exception, though, we added an action for creating example index in the app.
-				Simply make a POST request at <code>localhost:9200/es/index</code> to have the index created:
-				<code>curl -X POST localhost:9200/es/index</code>. Now inspect your indices, either by visiting
+				Simply make a POST request at <code>localhost:9000/es/index</code> to have the index created:
+				<code>curl -X POST localhost:9000/es/index</code>. Now inspect your indices, either by visiting
 				<a href="http://localhost:9200/_plugin/kopf" target="_blank">kopf dashboard</a> or by running
 				<code>curl localhost:9200/_cat/indices</code>. You should see a new empty index called "library".
 			</p>
