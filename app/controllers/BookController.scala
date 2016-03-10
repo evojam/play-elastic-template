@@ -36,8 +36,9 @@ class BookController @Inject() (bookDao: BookDao) extends Controller {
     }
   }
 
-  def bulkIndex() = Action.async {
-    /* In real app you'd rather parse input from request, but here we're just using canned list of books */
+  def populate() = Action.async {
+    /* You can easily convert this endpoint to a bulk insert. Simply parse a `List[Book]` from
+       JSON body and pass it instead of `cannedBulkInput` here. */
     bookDao.bulkIndex(cannedBulkInput) map {
       case resp if !resp.hasFailures => Ok
       case resp => InternalServerError(resp.failures.map(f => f.failureMessage) mkString ";")
