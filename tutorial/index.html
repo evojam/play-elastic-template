@@ -145,6 +145,18 @@
 				Elasticsearch connection: all the public methods expose only domain objects. The controller
 				is unaware of what kind of search engine is actually backing your app - and that's a Good Thing.
 			</p>
+			<p>
+			  For starters, populate the elasticsaerch index with a few books: <code>curl -XPOST localhost:9000/books/populate</code>.
+				This will call the action <code>populate()</code> in 
+				<a href="#code/app/controllers/BookController.scala" class="shortcut">BookController.scala</a>, which will result
+				in adding three books to the index.
+				Then you can execute a search: <code>curl -v "localhost:9000/books?q=life"</code>,
+				which will return the two of the books that match the query "life".
+			</p>
+			<p>
+				Tip: say <code>curl localhost:9000/books?q=life | json_pp</code>
+				to have the JSON results formatted in a human-friendly fashion.
+			</p>
 		</div>
 		<div>
 			<h2>Next</h2>
