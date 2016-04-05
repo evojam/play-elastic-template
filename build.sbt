@@ -12,6 +12,9 @@ libraryDependencies ++= Seq(
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
+// Workaround of https://github.com/sbt/sbt/issues/2054:
+resolvers += Resolver.url("Typesafe Ivy releases", url("https://repo.typesafe.com/typesafe/ivy-releases"))(Resolver.ivyStylePatterns)
+
 routesGenerator := InjectedRoutesGenerator
 
 
