@@ -1,13 +1,13 @@
 name := "play-elastic-template"
 
-version := "1.1"
+version := "1.2"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
-  "com.evojam" %% "play-elastic4s" % "0.3.0"
+  "com.evojam" %% "play-elastic4s" % "0.3.1"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
